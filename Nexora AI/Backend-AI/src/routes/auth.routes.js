@@ -2,7 +2,7 @@ import { Router } from "express"
 
 import { register, verifyEmail, login,getMe, resendVerificationEmail } from "../controllers/auth.controller.js";
 import { registerValidator, loginValidator  } from "../validators/auth.validator.js"
-import { authUser } from "../middleware/auth.middleware.js";
+import { authUser } from "../../Backend-AI/src/config/middleware/auth.middleware.js";
 
 const authRouter = Router()
 
