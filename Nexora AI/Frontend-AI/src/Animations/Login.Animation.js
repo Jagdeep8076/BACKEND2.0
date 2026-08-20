@@ -2,199 +2,152 @@ import gsap from "gsap";
 
 export const loginAnimation = (containerRef) => {
   const ctx = gsap.context(() => {
+    // =========================
+    // PAGE ENTRANCE
+    // =========================
+
     const tl = gsap.timeline({
       defaults: {
         ease: "power3.out",
       },
     });
 
-    // Initial states
-    gsap.set(
-      [
-        ".login-wrapper",
-        ".login-brand",
-        ".login-orb",
-        ".login-visual-text",
-        ".login-card",
-        ".login-title",
-        ".login-field",
-        ".login-button",
-        ".login-footer",
-      ],
-      {
-        opacity: 0,
-      }
-    );
-
-    gsap.set(".login-wrapper", {
-      y: 35,
+    tl.from(".login-shell", {
+      opacity: 0,
       scale: 0.97,
-    });
-
-    gsap.set(".login-brand", {
-      y: -20,
-    });
-
-    gsap.set(".login-orb", {
-      scale: 0.65,
-      y: 25,
-    });
-
-    gsap.set(".login-visual-text", {
-      y: 25,
-    });
-
-    gsap.set(".login-card", {
-      x: 35,
-    });
-
-    gsap.set(".login-title", {
-      y: 25,
-    });
-
-    gsap.set(".login-field", {
       y: 20,
-    });
-
-    gsap.set(".login-button", {
-      y: 15,
-      scale: 0.97,
-    });
-
-    gsap.set(".login-footer", {
-      y: 10,
-    });
-
-    // Main wrapper
-    tl.to(".login-wrapper", {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.9,
+      duration: 0.8,
     })
-
-      // Left brand
-      .to(
+      .from(
         ".login-brand",
         {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
+          opacity: 0,
+          x: -30,
+          duration: 0.7,
+        },
+        "-=0.5"
+      )
+      .from(
+        ".login-orbit",
+        {
+          opacity: 0,
+          scale: 0.65,
+          duration: 1.1,
+          ease: "back.out(1.4)",
+        },
+        "-=0.5"
+      )
+      .from(
+        ".login-copy > *",
+        {
+          opacity: 0,
+          y: 25,
+          stagger: 0.1,
+          duration: 0.65,
         },
         "-=0.55"
       )
-
-      // AI Core
-      .to(
-        ".login-orb",
+      .from(
+        ".login-form-content > *",
         {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 1,
-          ease: "back.out(1.5)",
-        },
-        "-=0.45"
-      )
-
-      // Right card
-      .to(
-        ".login-card",
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.7,
-        },
-        "-=0.65"
-      )
-
-      // Heading
-      .to(
-        ".login-title",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-        },
-        "-=0.35"
-      )
-
-      // Inputs
-      .to(
-        ".login-field",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.12,
-        },
-        "-=0.3"
-      )
-
-      // Button
-      .to(
-        ".login-button",
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
+          opacity: 0,
+          y: 22,
+          stagger: 0.08,
           duration: 0.55,
-          ease: "back.out(1.4)",
-        },
-        "-=0.15"
-      )
-
-      // Footer
-      .to(
-        ".login-footer",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.45,
-        },
-        "-=0.25"
-      )
-
-      // Left visual text
-      .to(
-        ".login-visual-text",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.65,
         },
         "-=0.45"
       );
 
-    // AI core continuous floating animation
-    gsap.to(".login-orb", {
-      y: -8,
-      duration: 2.5,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-      delay: 1,
-    });
+    // =========================
+    // ORBIT ROTATION
+    // =========================
 
-    // Decorative rings rotation
-    gsap.to(".login-visual .absolute.rounded-full.border", {
+    gsap.to(".orbit-one", {
       rotation: 360,
       duration: 18,
       repeat: -1,
       ease: "none",
     });
 
-    // Cyan glow breathing effect
-    gsap.to(".login-visual > .absolute", {
-      scale: 1.12,
-      opacity: 0.7,
-      duration: 2.8,
+    gsap.to(".orbit-two", {
+      rotation: -360,
+      duration: 25,
+      repeat: -1,
+      ease: "none",
+    });
+
+    gsap.to(".orbit-three", {
+      rotation: 360,
+      duration: 34,
+      repeat: -1,
+      ease: "none",
+    });
+
+    // =========================
+    // DOT PULSE
+    // =========================
+
+    gsap.to(".floating-dot", {
+      scale: 1.35,
+      opacity: 0.65,
+      duration: 1.5,
+      repeat: -1,
+      yoyo: true,
+      stagger: 0.25,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // CORE GLOW
+    // =========================
+
+    gsap.to(".core-glow", {
+      scale: 1.2,
+      opacity: 0.65,
+      duration: 2.2,
       repeat: -1,
       yoyo: true,
       ease: "sine.inOut",
-      delay: 1,
     });
 
+    // =========================
+    // CORE PULSE RING
+    // =========================
+
+    gsap.to(".core-pulse", {
+      scale: 1.12,
+      opacity: 0.45,
+      duration: 1.8,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // AMBIENT GLOW
+    // =========================
+
+    gsap.to(".ambient-glow", {
+      scale: 1.08,
+      opacity: 0.7,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // CORE LIGHT
+    // =========================
+
+    gsap.to(".core-light", {
+      scale: 1.5,
+      opacity: 0.75,
+      duration: 1.6,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
   }, containerRef);
 
   return () => ctx.revert();

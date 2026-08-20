@@ -1,21 +1,30 @@
-import { Router } from "express"
+import { Router } from "express";
 
-import { register, verifyEmail, login,getMe, resendVerificationEmail } from "../controllers/auth.controller.js";
-import { registerValidator, loginValidator  } from "../validators/auth.validator.js"
-import { authUser } from "../../Backend-AI/src/config/middleware/auth.middleware.js";
+import {
+  register,
+  verifyEmail,
+  login,
+  getMe,
+  resendVerificationEmail,
+} from "../controllers/auth.controller.js";
 
-const authRouter = Router()
+import {
+  registerValidator,
+  loginValidator,
+} from "../validators/auth.validator.js";
 
-authRouter.post("/register", registerValidator, register)
+import { authUser } from "../middleware/auth.middleware.js";
 
+const authRouter = Router();
 
-authRouter.post("/login", loginValidator, login)
+authRouter.post("/register", registerValidator, register);
 
-authRouter.get("/get-me", authUser, getMe)
+authRouter.post("/login", loginValidator, login);
 
+authRouter.get("/get-me", authUser, getMe);
 
-authRouter.get("/verify-email", verifyEmail )
+authRouter.get("/verify-email", verifyEmail);
 
-authRouter.post( "/resend-verification", resendVerificationEmail);
+authRouter.post("/resend-verification", resendVerificationEmail);
 
 export default authRouter;

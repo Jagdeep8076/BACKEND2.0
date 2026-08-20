@@ -1,261 +1,336 @@
-import { useEffect, useRef, useState } from "react";
-import { registerAnimation } from "../../../Animations/Register.animation";
+import React, { useLayoutEffect, useState } from "react";
+import { Link } from "react-router";
+import gsap from "gsap";
 
 const Register = () => {
-  const containerRef = useRef(null);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        defaults: {
+          ease: "power3.out",
+        },
+      });
 
-  useEffect(() => {
-    const cleanup = registerAnimation(containerRef);
+      tl.from(".register-shell", {
+        opacity: 0,
+        scale: 0.97,
+        duration: 0.8,
+      })
+        .from(
+          ".register-brand",
+          {
+            opacity: 0,
+            x: -35,
+            duration: 0.7,
+          },
+          "-=0.5"
+        )
+        .from(
+          ".register-orbit",
+          {
+            opacity: 0,
+            scale: 0.65,
+            duration: 1,
+            ease: "back.out(1.5)",
+          },
+          "-=0.5"
+        )
+        .from(
+          ".register-copy > *",
+          {
+            opacity: 0,
+            y: 25,
+            stagger: 0.1,
+            duration: 0.65,
+          },
+          "-=0.45"
+        )
+        .from(
+          ".register-form-content > *",
+          {
+            opacity: 0,
+            y: 22,
+            stagger: 0.08,
+            duration: 0.55,
+          },
+          "-=0.4"
+        );
 
-    return cleanup;
+      gsap.to(".register-orbit-one", {
+        rotation: 360,
+        duration: 18,
+        repeat: -1,
+        ease: "none",
+      });
+
+      gsap.to(".register-orbit-two", {
+        rotation: -360,
+        duration: 25,
+        repeat: -1,
+        ease: "none",
+      });
+
+      gsap.to(".register-orbit-three", {
+        rotation: 360,
+        duration: 34,
+        repeat: -1,
+        ease: "none",
+      });
+
+      gsap.to(".register-core-glow", {
+        scale: 1.18,
+        opacity: 0.65,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".register-core-pulse", {
+        scale: 1.12,
+        opacity: 0.55,
+        duration: 1.8,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".register-dot", {
+        y: -15,
+        duration: 2.4,
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.35,
+        ease: "sine.inOut",
+      });
+
+      gsap.to(".register-ambient", {
+        opacity: 0.75,
+        scale: 1.08,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    });
+
+    return () => ctx.revert();
   }, []);
 
-  // Two-way binding
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const submitForm = (event) => {
+    event.preventDefault();
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+    const payload = {
+      username,
+      email,
+      password,
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    console.log("Register Data:", formData);
+    console.log("Register payload:", payload);
   };
 
   return (
-    <main
-      ref={containerRef}
-      className="relative min-h-screen overflow-hidden bg-[#030712] px-4 py-8 text-white"
-    >
-      {/* Background Glow */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-cyan-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-blue-600/15 blur-[120px]" />
+    <main className="min-h-screen overflow-hidden bg-[#030712] text-white">
+      {/* Background */}
+      <div className="pointer-events-none fixed inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(0,190,220,0.08),transparent_32%),radial-gradient(circle_at_85%_50%,rgba(0,110,255,0.06),transparent_30%)]" />
 
-      {/* Grid Background */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-          backgroundSize: "45px 45px",
-        }}
-      />
+        <div
+          className="absolute inset-0 opacity-[0.16]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(49,184,198,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(49,184,198,.12) 1px, transparent 1px)",
+            backgroundSize: "52px 52px",
+          }}
+        />
+      </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
-        <div className="register-wrapper grid w-full overflow-hidden rounded-[28px] border border-white/[0.08] bg-white/[0.025] shadow-[0_30px_100px_rgba(0,0,0,0.55)] backdrop-blur-2xl lg:grid-cols-2">
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:px-8">
+        <div className="register-shell relative grid min-h-[720px] w-full max-w-[1240px] overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#080d18]/90 shadow-[0_30px_100px_rgba(0,0,0,.55)] backdrop-blur-xl lg:grid-cols-2">
 
-          {/* ================= LEFT SIDE ================= */}
-          <section className="register-visual relative hidden min-h-[650px] overflow-hidden border-r border-white/[0.07] lg:flex">
-            
-            {/* Glow Orb */}
-            <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-[90px]" />
+          {/* LEFT */}
+          <section className="relative hidden overflow-hidden border-r border-white/[0.07] lg:block">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(0,196,224,.11),transparent_35%)]" />
 
-            {/* Decorative Rings */}
-            <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-400/10" />
-            <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-400/10" />
-            <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-300/10" />
-
-            <div className="relative z-10 flex w-full flex-col justify-between p-10">
-              
-              {/* Logo */}
-              <div className="register-brand flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-400/10 shadow-[0_0_30px_rgba(34,211,238,0.12)]">
-                  <span className="text-lg font-bold text-cyan-300">
-                    N
-                  </span>
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-semibold tracking-wide">
-                    Nexora<span className="text-cyan-400">AI</span>
-                  </h2>
-
-                  <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">
-                    Intelligent Workspace
-                  </p>
-                </div>
+            {/* Brand */}
+            <div className="register-brand absolute left-10 top-9 z-20 flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/[0.08] text-2xl font-bold text-cyan-300 shadow-[0_0_30px_rgba(34,211,238,.12)]">
+                N
               </div>
 
-              {/* AI Visual */}
-              <div className="register-orb relative flex flex-1 items-center justify-center">
-                <div className="relative flex h-44 w-44 items-center justify-center rounded-full border border-cyan-300/20 bg-gradient-to-br from-cyan-400/10 via-blue-500/10 to-transparent shadow-[0_0_80px_rgba(34,211,238,0.12)]">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">
+                  Nexora<span className="text-cyan-400">AI</span>
+                </h2>
 
-                  <div className="absolute inset-4 rounded-full border border-blue-400/10" />
-
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full border border-cyan-300/20 bg-[#07111f]/90 shadow-[0_0_45px_rgba(34,211,238,0.18)]">
-                    <div className="text-center">
-                      <div className="mx-auto mb-2 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_15px_rgba(103,232,249,0.9)]" />
-                      <span className="text-xs font-semibold tracking-wider text-cyan-200">
-                        AI
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Floating dots */}
-                  <span className="absolute -right-5 top-8 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_15px_rgba(103,232,249,0.8)]" />
-                  <span className="absolute -left-4 bottom-14 h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.8)]" />
-                  <span className="absolute bottom-0 right-8 h-1 w-1 rounded-full bg-cyan-200" />
-                </div>
-              </div>
-
-              {/* Bottom Text */}
-              <div className="register-visual-text max-w-md">
-                <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-cyan-400">
-                  Next Generation AI
-                </p>
-
-                <h1 className="text-4xl font-bold leading-tight">
-                  Build your future
-                  <br />
-                  with <span className="text-cyan-400">Nexora AI.</span>
-                </h1>
-
-                <p className="mt-5 max-w-sm text-sm leading-6 text-gray-500">
-                  Create your account and step into an intelligent workspace
-                  designed to make your ideas faster, smarter and better.
+                <p className="mt-0.5 text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                  Intelligent Workspace
                 </p>
               </div>
             </div>
-          </section>
 
-          {/* ================= RIGHT SIDE ================= */}
-          <section className="register-card flex min-h-[650px] items-center justify-center p-6 sm:p-10 lg:p-14">
-            <div className="w-full max-w-md">
+            {/* AI ORBIT */}
+            <div className="absolute left-1/2 top-[42%] h-[410px] w-[410px] -translate-x-1/2 -translate-y-1/2">
+              <div className="register-ambient absolute inset-[15%] rounded-full bg-cyan-400/10 blur-3xl" />
 
-              {/* Mobile Brand */}
-              <div className="mb-10 flex items-center justify-center gap-3 lg:hidden">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-400/10">
-                  <span className="font-bold text-cyan-300">N</span>
+              <div className="register-orbit absolute inset-0">
+                <div className="register-orbit-one absolute inset-[9%] rounded-full border border-cyan-400/20">
+                  <span className="register-dot absolute -right-1 top-[16%] h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_18px_#22d3ee]" />
                 </div>
 
-                <h2 className="text-xl font-semibold">
-                  Nexora<span className="text-cyan-400">AI</span>
-                </h2>
+                <div className="register-orbit-two absolute inset-[22%] rounded-full border border-cyan-400/[0.14]">
+                  <span className="register-dot absolute -left-1 top-[38%] h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_15px_#60a5fa]" />
+                </div>
+
+                <div className="register-orbit-three absolute inset-[35%] rounded-full border border-cyan-400/[0.12]">
+                  <span className="register-dot absolute right-[5%] bottom-[15%] h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-[0_0_12px_#67e8f9]" />
+                </div>
               </div>
 
-              {/* Title */}
-              <div className="register-title mb-9">
-                <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-cyan-400">
+              {/* Core */}
+              <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2">
+                <div className="register-core-glow absolute -inset-7 rounded-full bg-cyan-400/10 blur-2xl" />
+
+                <div className="register-core-pulse absolute -inset-2 rounded-full border border-cyan-300/20" />
+
+                <div className="relative flex h-32 w-32 items-center justify-center rounded-full border border-cyan-300/25 bg-[#06111f] shadow-[0_0_45px_rgba(34,211,238,.12)]">
+                  <div className="absolute h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_#22d3ee]" />
+
+                  <span className="mt-12 text-[12px] font-semibold tracking-wide text-cyan-200">
+                    AI CORE
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom copy */}
+            <div className="register-copy absolute bottom-12 left-10 right-12">
+              <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
+                Next Generation AI
+              </p>
+
+              <h1 className="max-w-[520px] text-5xl font-bold leading-[1.05] tracking-[-0.04em]">
+                Build your future
+                <br />
+                with <span className="text-cyan-400">Nexora AI.</span>
+              </h1>
+
+              <p className="mt-6 max-w-[500px] text-[15px] leading-7 text-slate-500">
+                Create your account and step into an intelligent workspace
+                designed to make your ideas faster, smarter and better.
+              </p>
+            </div>
+          </section>
+
+          {/* RIGHT */}
+          <section className="relative flex min-h-[720px] items-center justify-center px-7 py-12 sm:px-12 lg:px-16">
+            <div className="register-form-content w-full max-w-[500px]">
+
+              <div className="mb-8">
+                <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
                   Create Account
                 </p>
 
-                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                <h1 className="text-4xl font-bold tracking-[-0.035em] sm:text-5xl">
                   Welcome to Nexora
                 </h1>
 
-                <p className="mt-3 text-sm leading-6 text-gray-500">
+                <p className="mt-4 text-[15px] leading-6 text-slate-500">
                   Create your account and start exploring the power of AI.
                 </p>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={submitForm} className="space-y-5">
 
                 {/* Username */}
-                <div className="register-field">
+                <div>
                   <label
                     htmlFor="username"
-                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-gray-400"
+                    className="mb-3 block text-[12px] font-semibold uppercase tracking-wide text-slate-400"
                   >
                     Username
                   </label>
 
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      placeholder="Enter your username"
-                      required
-                      autoComplete="username"
-                      className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 hover:border-white/[0.14] focus:border-cyan-400/50 focus:bg-cyan-400/[0.025] focus:shadow-[0_0_25px_rgba(34,211,238,0.08)]"
-                    />
-                  </div>
+                  <input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    placeholder="Enter your username"
+                    required
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
+                  />
                 </div>
 
                 {/* Email */}
-                <div className="register-field">
+                <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-gray-400"
+                    className="mb-3 block text-[12px] font-semibold uppercase tracking-wide text-slate-400"
                   >
                     Email Address
                   </label>
 
                   <input
-                    type="email"
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     required
-                    autoComplete="email"
-                    className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 hover:border-white/[0.14] focus:border-cyan-400/50 focus:bg-cyan-400/[0.025] focus:shadow-[0_0_25px_rgba(34,211,238,0.08)]"
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
                   />
                 </div>
 
                 {/* Password */}
-                <div className="register-field">
+                <div>
                   <label
                     htmlFor="password"
-                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-gray-400"
+                    className="mb-3 block text-[12px] font-semibold uppercase tracking-wide text-slate-400"
                   >
                     Password
                   </label>
 
                   <input
-                    type="password"
                     id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Create a strong password"
                     required
-                    autoComplete="new-password"
-                    className="w-full rounded-xl border border-white/[0.08] bg-black/30 px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-700 hover:border-white/[0.14] focus:border-cyan-400/50 focus:bg-cyan-400/[0.025] focus:shadow-[0_0_25px_rgba(34,211,238,0.08)]"
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
                   />
                 </div>
 
                 {/* Button */}
                 <button
                   type="submit"
-                  className="register-button group relative mt-3 w-full overflow-hidden rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3.5 text-sm font-semibold text-white shadow-[0_0_25px_rgba(34,211,238,0.12)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_35px_rgba(34,211,238,0.22)] active:scale-[0.98]"
+                  className="group relative mt-2 h-14 w-full overflow-hidden rounded-xl bg-gradient-to-r from-cyan-400 to-blue-600 text-sm font-bold text-white shadow-[0_10px_35px_rgba(0,140,255,.18)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(0,170,255,.28)]"
                 >
-                  <span className="relative z-10">
-                    Create Account
-                  </span>
+                  <span className="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-700 group-hover:translate-x-full" />
 
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <span className="relative">Create Account</span>
                 </button>
               </form>
 
-              {/* Footer */}
-              <p className="register-footer mt-8 text-center text-sm text-gray-500">
+              {/* Login */}
+              <p className="mt-8 text-center text-sm text-slate-500">
                 Already have an account?{" "}
-                <a
-                  href="/login"
-                  className="font-medium text-cyan-400 transition-colors hover:text-cyan-300"
+                <Link
+                  to="/login"
+                  className="font-semibold text-cyan-400 transition hover:text-cyan-300"
                 >
                   Sign in
-                </a>
+                </Link>
               </p>
 
-              {/* Bottom Security Text */}
-              <div className="mt-8 flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider text-gray-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
+              {/* Footer */}
+              <div className="mt-8 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-700">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.7)]" />
                 Secure AI Workspace
               </div>
             </div>

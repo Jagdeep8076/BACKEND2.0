@@ -2,199 +2,152 @@ import gsap from "gsap";
 
 export const registerAnimation = (containerRef) => {
   const ctx = gsap.context(() => {
+    // =========================
+    // PAGE ENTRANCE
+    // =========================
+
     const tl = gsap.timeline({
       defaults: {
         ease: "power3.out",
       },
     });
 
-    // Initial states
-    gsap.set(
-      [
-        ".register-wrapper",
-        ".register-brand",
-        ".register-orb",
-        ".register-visual-text",
-        ".register-card",
-        ".register-title",
-        ".register-field",
-        ".register-button",
-        ".register-footer",
-      ],
-      {
-        opacity: 0,
-      }
-    );
-
-    gsap.set(".register-wrapper", {
-      y: 35,
+    tl.from(".register-shell", {
+      opacity: 0,
       scale: 0.97,
-    });
-
-    gsap.set(".register-brand", {
-      y: -20,
-    });
-
-    gsap.set(".register-orb", {
-      scale: 0.65,
-      y: 25,
-    });
-
-    gsap.set(".register-visual-text", {
-      y: 25,
-    });
-
-    gsap.set(".register-card", {
-      x: 35,
-    });
-
-    gsap.set(".register-title", {
-      y: 25,
-    });
-
-    gsap.set(".register-field", {
       y: 20,
-    });
-
-    gsap.set(".register-button", {
-      y: 15,
-      scale: 0.97,
-    });
-
-    gsap.set(".register-footer", {
-      y: 10,
-    });
-
-    // Main wrapper
-    tl.to(".register-wrapper", {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.9,
+      duration: 0.8,
     })
-
-      // Brand
-      .to(
+      .from(
         ".register-brand",
         {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
+          opacity: 0,
+          x: -30,
+          duration: 0.7,
+        },
+        "-=0.5"
+      )
+      .from(
+        ".register-orbit",
+        {
+          opacity: 0,
+          scale: 0.65,
+          duration: 1.1,
+          ease: "back.out(1.4)",
+        },
+        "-=0.5"
+      )
+      .from(
+        ".register-copy > *",
+        {
+          opacity: 0,
+          y: 25,
+          stagger: 0.1,
+          duration: 0.65,
         },
         "-=0.55"
       )
-
-      // AI Core
-      .to(
-        ".register-orb",
+      .from(
+        ".register-form-content > *",
         {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 1,
-          ease: "back.out(1.5)",
-        },
-        "-=0.45"
-      )
-
-      // Register card
-      .to(
-        ".register-card",
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.7,
-        },
-        "-=0.65"
-      )
-
-      // Heading
-      .to(
-        ".register-title",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-        },
-        "-=0.35"
-      )
-
-      // Form fields
-      .to(
-        ".register-field",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          stagger: 0.12,
-        },
-        "-=0.3"
-      )
-
-      // Button
-      .to(
-        ".register-button",
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
+          opacity: 0,
+          y: 22,
+          stagger: 0.08,
           duration: 0.55,
-          ease: "back.out(1.4)",
-        },
-        "-=0.15"
-      )
-
-      // Footer
-      .to(
-        ".register-footer",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.45,
-        },
-        "-=0.25"
-      )
-
-      // Left visual text
-      .to(
-        ".register-visual-text",
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.65,
         },
         "-=0.45"
       );
 
-    // AI Core floating animation
-    gsap.to(".register-orb", {
-      y: -8,
-      duration: 2.5,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut",
-      delay: 1,
-    });
+    // =========================
+    // ORBIT ROTATION
+    // =========================
 
-    // Decorative rings rotation
-    gsap.to(".register-visual .absolute.rounded-full.border", {
+    gsap.to(".register-orbit-one", {
       rotation: 360,
       duration: 18,
       repeat: -1,
       ease: "none",
     });
 
-    // Background glow breathing
-    gsap.to(".register-visual > .absolute", {
-      scale: 1.12,
-      opacity: 0.7,
-      duration: 2.8,
+    gsap.to(".register-orbit-two", {
+      rotation: -360,
+      duration: 25,
+      repeat: -1,
+      ease: "none",
+    });
+
+    gsap.to(".register-orbit-three", {
+      rotation: 360,
+      duration: 34,
+      repeat: -1,
+      ease: "none",
+    });
+
+    // =========================
+    // DOT PULSE
+    // =========================
+
+    gsap.to(".register-dot", {
+      scale: 1.35,
+      opacity: 0.65,
+      duration: 1.5,
+      repeat: -1,
+      yoyo: true,
+      stagger: 0.25,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // CORE GLOW
+    // =========================
+
+    gsap.to(".register-core-glow", {
+      scale: 1.2,
+      opacity: 0.65,
+      duration: 2.2,
       repeat: -1,
       yoyo: true,
       ease: "sine.inOut",
-      delay: 1,
     });
 
+    // =========================
+    // CORE PULSE RING
+    // =========================
+
+    gsap.to(".register-core-pulse", {
+      scale: 1.12,
+      opacity: 0.45,
+      duration: 1.8,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // AMBIENT GLOW
+    // =========================
+
+    gsap.to(".register-ambient", {
+      scale: 1.08,
+      opacity: 0.7,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+
+    // =========================
+    // CORE LIGHT
+    // =========================
+
+    gsap.to(".register-core-light", {
+      scale: 1.5,
+      opacity: 0.75,
+      duration: 1.6,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
   }, containerRef);
 
   return () => ctx.revert();
