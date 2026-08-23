@@ -23,7 +23,7 @@ const userMessage = await messageModel.create({
     role: "user"
 })
 
-const messages = await messageModel.find ({ chat: chat._id})
+const messages = await messageModel.find ({ chat: chat._id || chat._id})
 
   const result = await generateResponse(messages);
 
