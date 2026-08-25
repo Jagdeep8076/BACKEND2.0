@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat";
 import { dashboardAnimation } from "../../../Animations/Dashboard.animation";
+import { setCurrentChatId } from "../chat.slice";
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
+
   const containerRef = useRef(null);
   const chat = useChat();
 
@@ -18,12 +21,10 @@ const Dashboard = () => {
   const [chatInput, setChatInput] = useState("");
 
   useEffect(() => {
-    // Socket connection
-    if (chat.intializeSocketConnection) {
-      chat.intializeSocketConnection();
+    if (chat.initializeSocketConnection) {
+      chat.initializeSocketConnection();
     }
 
-    // Recent chats
     if (chat.handleGetChats) {
       chat.handleGetChats();
     }
@@ -32,8 +33,6 @@ const Dashboard = () => {
 
     return cleanup;
   }, []);
-
-  // ================= SEND MESSAGE =================
 
   const handleSubmitMessage = (event) => {
     event.preventDefault();
@@ -44,45 +43,34 @@ const Dashboard = () => {
       return;
     }
 
-    if (!currentChatId) {
-      return;
-    }
-
     chat.handleSendMessage({
-  message: trimmedMessage,
-  chatId: currentChatId,
-});
+      message: trimmedMessage,
+      chatId: currentChatId,
+    });
 
     setChatInput("");
   };
 
-  // ================= OPEN CHAT =================
-
-  const openChat = (chatId) => {
-    if (chat.handleOpenChat) {
-      chat.handleOpenChat(chatId, chats);
-    }
+  const handleNewChat = () => {
+    setChatInput("");
+    dispatch(setCurrentChatId(null));
   };
 
-  // ================= CHAT LIST =================
+  const handleOpenChat = (chatId) => {
+    chat.handleOpenChat(chatId, chats);
+  };
 
   const chatList = Object.values(chats || {});
 
-  // ================= CURRENT CHAT =================
+  const currentChat = chats?.[currentChatId];
 
-  const currentChat =
-    chats?.[currentChatId];
-
-  const messages =
-    currentChat?.messages || [];
+  const messages = currentChat?.messages || [];
 
   return (
     <main
       ref={containerRef}
       className="relative flex h-screen w-full overflow-hidden bg-[#030712] text-white"
     >
-      {/* ================= BACKGROUND ================= */}
-
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.035]"
         style={{
@@ -96,12 +84,7 @@ const Dashboard = () => {
 
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-blue-600/10 blur-[130px]" />
 
-      {/* ================= SIDEBAR ================= */}
-
       <aside className="dashboard-sidebar relative z-20 flex h-full w-[270px] shrink-0 flex-col border-r border-white/[0.07] bg-[#050b14]/90 backdrop-blur-2xl">
-
-        {/* LOGO */}
-
         <div className="flex h-[76px] shrink-0 items-center gap-3 border-b border-white/[0.06] px-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
             <span className="text-lg font-bold text-cyan-300">
@@ -112,9 +95,7 @@ const Dashboard = () => {
           <div>
             <h1 className="text-lg font-semibold">
               Nexora
-              <span className="text-cyan-400">
-                AI
-              </span>
+              <span className="text-cyan-400">AI</span>
             </h1>
 
             <p className="text-[9px] uppercase tracking-[0.25em] text-gray-600">
@@ -123,11 +104,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* NEW CHAT */}
-
         <div className="p-4">
           <button
             type="button"
+            onClick={handleNewChat}
             className="flex w-full items-center gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.06] px-4 py-3 text-sm text-gray-200 transition hover:bg-cyan-400/10"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/10 text-lg text-cyan-300">
@@ -138,8 +118,6 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {/* NAVIGATION */}
-
         <nav className="px-3">
           <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.25em] text-gray-600">
             Workspace
@@ -149,15 +127,10 @@ const Dashboard = () => {
             type="button"
             className="flex w-full items-center gap-3 rounded-lg bg-white/[0.06] px-3 py-2.5 text-sm text-white"
           >
-            <span className="text-cyan-400">
-              ◉
-            </span>
-
+            <span className="text-cyan-400">◉</span>
             Dashboard
           </button>
         </nav>
-
-        {/* ================= RECENT CHATS ================= */}
 
         <div className="mt-7 flex-1 overflow-y-auto px-3">
           <p className="px-3 pb-2 text-[10px] uppercase tracking-[0.25em] text-gray-600">
@@ -165,13 +138,11 @@ const Dashboard = () => {
           </p>
 
           <div className="space-y-1">
-            {chatList.map((chatItem, index) => (
+            {chatList.map((chatItem) => (
               <button
-                key={chatItem.id || index}
+                key={chatItem.id}
                 type="button"
-                onClick={() =>
-                  openChat(chatItem.id)
-                }
+                onClick={() => handleOpenChat(chatItem.id)}
                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
                   currentChatId === chatItem.id
                     ? "bg-white/[0.07] text-white"
@@ -196,14 +167,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* ================= USER ================= */}
-
         <div className="border-t border-white/[0.06] p-3">
           <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold">
-              {user?.username
-                ?.charAt(0)
-                ?.toUpperCase() || "U"}
+              {user?.username?.charAt(0)?.toUpperCase() || "U"}
             </div>
 
             <div className="min-w-0">
@@ -219,37 +186,23 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* ================= MAIN ================= */}
-
       <section className="relative z-10 flex min-w-0 flex-1 flex-col">
-
-        {/* TOPBAR */}
-
         <header className="dashboard-topbar flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#030712]/60 px-5 backdrop-blur-xl md:px-8">
-
           <div className="text-sm text-gray-500">
             Workspace
-            <span className="mx-2 text-gray-700">
-              /
-            </span>
+            <span className="mx-2 text-gray-700">/</span>
             <span className="text-gray-300">
               Dashboard
             </span>
           </div>
 
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-xs font-bold">
-            {user?.username
-              ?.charAt(0)
-              ?.toUpperCase() || "U"}
+            {user?.username?.charAt(0)?.toUpperCase() || "U"}
           </div>
         </header>
 
-        {/* ================= CONTENT ================= */}
-
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-10 md:px-10 lg:py-14">
-
-            {/* GREETING */}
 
             <div className="dashboard-greeting mb-10">
               <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-cyan-400">
@@ -270,23 +223,29 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* ================= AI CORE ================= */}
-
             {!currentChatId && (
               <div className="dashboard-core relative mb-10 flex min-h-[250px] items-center justify-center overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.018]">
 
                 <div className="dashboard-core-glow absolute h-48 w-48 rounded-full bg-cyan-400/10 blur-[80px]" />
 
+                <div className="dashboard-core-light absolute inset-0 rounded-full bg-cyan-400/[0.03] blur-3xl" />
+
                 <div className="dashboard-ring-one absolute h-40 w-40 rounded-full border border-cyan-400/10">
-                  <span className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.95)]" />
+                  <span className="dashboard-orbit-dot absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.9)]" />
+
+                  <span className="dashboard-orbit-dot absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_rgba(103,232,249,0.8)]" />
                 </div>
 
                 <div className="dashboard-ring-two absolute h-56 w-56 rounded-full border border-cyan-400/[0.07]">
-                  <span className="absolute -right-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.95)]" />
+                  <span className="dashboard-orbit-dot absolute -right-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.9)]" />
+
+                  <span className="dashboard-orbit-dot absolute bottom-8 left-6 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
                 </div>
 
                 <div className="dashboard-ring-three absolute h-72 w-72 rounded-full border border-blue-400/[0.05]">
-                  <span className="absolute bottom-4 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
+                  <span className="dashboard-orbit-dot absolute bottom-4 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_15px_rgba(103,232,249,0.9)]" />
+
+                  <span className="dashboard-orbit-dot absolute left-6 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-blue-300 shadow-[0_0_12px_rgba(96,165,250,0.8)]" />
                 </div>
 
                 <span className="dashboard-particle absolute left-[38%] top-[35%] h-1.5 w-1.5 rounded-full bg-cyan-300" />
@@ -295,9 +254,9 @@ const Dashboard = () => {
 
                 <span className="dashboard-particle absolute bottom-[32%] left-[43%] h-1 w-1 rounded-full bg-cyan-200" />
 
-                {/* CORE */}
-
                 <div className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full border border-cyan-400/20 bg-[#07111f] shadow-[0_0_60px_rgba(34,211,238,0.15)]">
+
+                  <div className="dashboard-core-light absolute inset-0 rounded-full bg-cyan-400/10 blur-xl" />
 
                   <div className="absolute inset-0 rounded-full bg-cyan-400/10 blur-xl" />
 
@@ -319,11 +278,8 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* ================= MESSAGES ================= */}
-
             {currentChatId && (
               <div className="messages mb-8 flex-1 space-y-4 overflow-y-auto pr-2">
-
                 {messages.map((message, index) => (
                   <div
                     key={message.id || index}
@@ -346,25 +302,21 @@ const Dashboard = () => {
                               {children}
                             </p>
                           ),
-
                           ul: ({ children }) => (
                             <ul className="mb-2 list-disc pl-5">
                               {children}
                             </ul>
                           ),
-
                           ol: ({ children }) => (
                             <ol className="mb-2 list-decimal pl-5">
                               {children}
                             </ol>
                           ),
-
                           code: ({ children }) => (
                             <code className="rounded bg-white/10 px-1 py-0.5">
                               {children}
                             </code>
                           ),
-
                           pre: ({ children }) => (
                             <pre className="mb-2 overflow-x-auto rounded-xl bg-black/30 p-3">
                               {children}
@@ -380,11 +332,8 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* ================= QUICK ACTIONS ================= */}
-
             {!currentChatId && (
               <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-
                 {[
                   ["✦", "Ask Nexora", "Ask anything"],
                   ["◇", "Create", "Generate content"],
@@ -412,16 +361,12 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* ================= INPUT ================= */}
-
             <form
               onSubmit={handleSubmitMessage}
               className="dashboard-chatbox mt-auto"
             >
               <div className="rounded-2xl border border-white/[0.09] bg-[#070d17]/90 p-2 transition focus-within:border-cyan-400/25">
-
                 <div className="flex items-end gap-2">
-
                   <textarea
                     value={chatInput}
                     onChange={(event) =>
@@ -434,15 +379,11 @@ const Dashboard = () => {
 
                   <button
                     type="submit"
-                    disabled={
-                      !chatInput.trim() ||
-                      !currentChatId
-                    }
+                    disabled={!chatInput.trim()}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white transition hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     ↑
                   </button>
-
                 </div>
               </div>
 
@@ -450,7 +391,6 @@ const Dashboard = () => {
                 Nexora AI can make mistakes. Verify important information.
               </p>
             </form>
-
           </div>
         </div>
       </section>

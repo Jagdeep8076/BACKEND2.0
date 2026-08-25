@@ -221,7 +221,7 @@ const Login = () => {
             {/* Bottom copy */}
             <div className="login-copy absolute bottom-12 left-10 right-12">
               <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
-                Intelligent Experience
+                
               </p>
 
               <h1 className="max-w-[520px] text-5xl font-bold leading-[1.05] tracking-[-0.04em]">
