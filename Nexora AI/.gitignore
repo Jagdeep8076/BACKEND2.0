@@ -26,3 +26,9 @@ pnpm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# RAG documents
+Nexora AI/Backend-AI/documents/
+
+# Temporary RAG test files
+Nexora AI/Backend-AI/test-*.js

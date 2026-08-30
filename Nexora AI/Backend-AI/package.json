@@ -12,10 +12,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^2.19.0",
+    "@langchain/community": "^1.1.29",
+    "@langchain/core": "^1.2.9",
     "@langchain/google-genai": "^2.2.0",
     "@langchain/mistralai": "^1.2.0",
+    "@langchain/pinecone": "^1.0.3",
+    "@langchain/textsplitters": "^1.0.1",
+    "@pinecone-database/pinecone": "^5.1.2",
     "@tavily/core": "^0.7.8",
     "bcrypt": "^6.0.0",
+    "cookie": "^2.0.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -26,6 +33,7 @@
     "mongoose": "^9.9.2",
     "morgan": "^1.11.0",
     "nodemailer": "^9.0.5",
+    "pdf-parse": "^2.4.5",
     "socket.io": "^4.8.3",
     "zod": "^4.4.3"
   }

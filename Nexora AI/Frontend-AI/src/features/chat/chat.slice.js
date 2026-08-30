@@ -1,65 +1,262 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 
 const chatSlice = createSlice({
-    name: 'chat',
+
+    name: "chat",
+
     initialState: {
+
         chats: {},
+
         currentChatId: null,
+
         isLoading: false,
+
         error: null,
+
     },
+
     reducers: {
+
+        // ==========================================
+        // CREATE NEW CHAT
+        // ==========================================
+
         createNewChat: (state, action) => {
-            const { chatId, title } = action.payload
-            state.chats[ chatId ] = {
+
+            const { chatId, title } =
+                action.payload;
+
+            state.chats[chatId] = {
+
                 id: chatId,
+
                 title,
+
                 messages: [],
-                lastUpdated: new Date().toISOString(),
+
+                lastUpdated:
+                    new Date().toISOString(),
+            };
+        },
+
+
+        // ==========================================
+        // ADD NORMAL MESSAGE
+        // ==========================================
+
+        addNewMessage: (state, action) => {
+
+            const {
+                chatId,
+                content,
+                role
+            } = action.payload;
+
+            // Safety check
+            if (!state.chats[chatId]) {
+                return;
+            }
+
+            state.chats[chatId].messages.push({
+                content,
+                role,
+            });
+        },
+
+
+        // ==========================================
+        // ADD MULTIPLE MESSAGES
+        // ==========================================
+
+        addMessages: (state, action) => {
+
+            const {
+                chatId,
+                messages
+            } = action.payload;
+
+            // Safety check
+            if (!state.chats[chatId]) {
+                return;
+            }
+
+            state.chats[chatId]
+                .messages
+                .push(...messages);
+        },
+
+
+        // ==========================================
+        // START AI STREAM
+        // ==========================================
+
+        startStreamingMessage: (
+            state,
+            action
+        ) => {
+
+            const { chatId } =
+                action.payload;
+
+            // Safety check
+            if (!state.chats[chatId]) {
+                return;
+            }
+
+            state.chats[chatId]
+                .messages
+                .push({
+                    content: "",
+                    role: "ai",
+                });
+        },
+
+
+        // ==========================================
+        // APPEND AI TOKEN
+        // ==========================================
+
+        appendStreamingToken: (
+            state,
+            action
+        ) => {
+
+            const {
+                chatId,
+                token
+            } = action.payload;
+
+            // Safety check
+            if (!state.chats[chatId]) {
+                return;
+            }
+
+            const messages =
+                state.chats[chatId].messages;
+
+            const lastMessage =
+                messages[messages.length - 1];
+
+            // Make sure last message is AI
+            if (
+                lastMessage &&
+                lastMessage.role === "ai"
+            ) {
+
+                lastMessage.content += token;
             }
         },
-        addNewMessage: (state, action) => {
-            const { chatId, content, role } = action.payload
-            state.chats[ chatId ].messages.push({ content, role })
+
+
+        // ==========================================
+        // FINISH STREAM
+        // ==========================================
+
+        finishStreamingMessage: (
+            state,
+            action
+        ) => {
+
+            const {
+                chatId,
+                content
+            } = action.payload;
+
+            if (!state.chats[chatId]) {
+                return;
+            }
+
+            const messages =
+                state.chats[chatId].messages;
+
+            const lastMessage =
+                messages[messages.length - 1];
+
+            if (
+                lastMessage &&
+                lastMessage.role === "ai"
+            ) {
+
+                lastMessage.content =
+                    content;
+
+            }
         },
-        addMessages: (state, action) => {
-            const { chatId, messages } = action.payload
-            state.chats[ chatId ].messages.push(...messages)
-        },
+
+
+        // ==========================================
+        // SET CHATS
+        // ==========================================
+
         setChats: (state, action) => {
-            state.chats = action.payload
-        },
-        setCurrentChatId: (state, action) => {
-            state.currentChatId = action.payload
-        },
-        setLoading: (state, action) => {
-            state.isLoading = action.payload
-        },
-        setError: (state, action) => {
-            state.error = action.payload
-        },
-    }
-})
 
-export const { setChats, setCurrentChatId, setLoading, setError, createNewChat, addNewMessage, addMessages } = chatSlice.actions
-export default chatSlice.reducer
+            state.chats =
+                action.payload;
+        },
 
 
-// chats = {
-//     "docker and AWS": {
-//         messages: [
-//             {
-//                 role: "user",
-//                 content: "What is docker?"
-//             },
-//             {
-//                 role: "ai",
-//                 content: "Docker is a platform that allows developers to automate the deployment of applications inside lightweight, portable containers. It provides an efficient way to package and distribute software, ensuring consistency across different environments."
-//             }
-//         ],
-//         id: "docker and AWS",
-//         lastUpdated: "2024-06-20T12:34:56Z",
-//     }
+        // ==========================================
+        // SET CURRENT CHAT
+        // ==========================================
 
-// }
+        setCurrentChatId: (
+            state,
+            action
+        ) => {
+
+            state.currentChatId =
+                action.payload;
+        },
+
+
+        // ==========================================
+        // LOADING
+        // ==========================================
+
+        setLoading: (
+            state,
+            action
+        ) => {
+
+            state.isLoading =
+                action.payload;
+        },
+
+
+        // ==========================================
+        // ERROR
+        // ==========================================
+
+        setError: (
+            state,
+            action
+        ) => {
+
+            state.error =
+                action.payload;
+        },
+    },
+});
+
+
+export const {
+    setChats,
+    setCurrentChatId,
+    setLoading,
+    setError,
+
+    createNewChat,
+
+    addNewMessage,
+    addMessages,
+
+    startStreamingMessage,
+    appendStreamingToken,
+    finishStreamingMessage,
+
+} = chatSlice.actions;
+
+
+export default chatSlice.reducer;

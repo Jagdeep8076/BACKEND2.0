@@ -3,36 +3,38 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useDispatch, useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat";
-import { dashboardAnimation } from "../../../Animations/Dashboard.animation";
+import { useAuth } from "../../auth/hook/useAuth.js";
+import { dashboardAnimation } from "../../../Animations/Dashboard.animation.js";
 import { setCurrentChatId } from "../chat.slice";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-
   const containerRef = useRef(null);
   const chat = useChat();
+  const { handleLogout } = useAuth();
 
   const { user } = useSelector((state) => state.auth);
+
   const chats = useSelector((state) => state.chat.chats);
+
   const currentChatId = useSelector(
     (state) => state.chat.currentChatId
   );
 
   const [chatInput, setChatInput] = useState("");
 
-  useEffect(() => {
-    if (chat.initializeSocketConnection) {
-      chat.initializeSocketConnection();
-    }
+useEffect(() => {
+    chat.initializeSocketConnection();
 
-    if (chat.handleGetChats) {
-      chat.handleGetChats();
-    }
+    chat.handleGetChats();
 
     const cleanup = dashboardAnimation(containerRef);
 
-    return cleanup;
-  }, []);
+    return () => {
+        cleanup?.();
+        chat.disconnectSocket();
+    };
+}, []);
 
   const handleSubmitMessage = (event) => {
     event.preventDefault();
@@ -84,6 +86,7 @@ const Dashboard = () => {
 
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-blue-600/10 blur-[130px]" />
 
+      {/* Sidebar */}
       <aside className="dashboard-sidebar relative z-20 flex h-full w-[270px] shrink-0 flex-col border-r border-white/[0.07] bg-[#050b14]/90 backdrop-blur-2xl">
         <div className="flex h-[76px] shrink-0 items-center gap-3 border-b border-white/[0.06] px-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
@@ -167,6 +170,7 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* User Section */}
         <div className="border-t border-white/[0.06] p-3">
           <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold">
@@ -183,9 +187,19 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-3 w-full rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5 text-left text-sm text-gray-400 transition hover:border-red-400/20 hover:bg-red-400/[0.05] hover:text-red-300"
+          >
+            Logout
+          </button>
         </div>
       </aside>
 
+      {/* Main Section */}
       <section className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="dashboard-topbar flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#030712]/60 px-5 backdrop-blur-xl md:px-8">
           <div className="text-sm text-gray-500">
@@ -204,6 +218,7 @@ const Dashboard = () => {
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-10 md:px-10 lg:py-14">
 
+            {/* Greeting */}
             <div className="dashboard-greeting mb-10">
               <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-cyan-400">
                 Intelligent Workspace
@@ -223,6 +238,7 @@ const Dashboard = () => {
               </p>
             </div>
 
+            {/* AI Core */}
             {!currentChatId && (
               <div className="dashboard-core relative mb-10 flex min-h-[250px] items-center justify-center overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.018]">
 
@@ -278,6 +294,7 @@ const Dashboard = () => {
               </div>
             )}
 
+            {/* Messages */}
             {currentChatId && (
               <div className="messages mb-8 flex-1 space-y-4 overflow-y-auto pr-2">
                 {messages.map((message, index) => (
@@ -302,21 +319,25 @@ const Dashboard = () => {
                               {children}
                             </p>
                           ),
+
                           ul: ({ children }) => (
                             <ul className="mb-2 list-disc pl-5">
                               {children}
                             </ul>
                           ),
+
                           ol: ({ children }) => (
                             <ol className="mb-2 list-decimal pl-5">
                               {children}
                             </ol>
                           ),
+
                           code: ({ children }) => (
                             <code className="rounded bg-white/10 px-1 py-0.5">
                               {children}
                             </code>
                           ),
+
                           pre: ({ children }) => (
                             <pre className="mb-2 overflow-x-auto rounded-xl bg-black/30 p-3">
                               {children}
@@ -332,6 +353,7 @@ const Dashboard = () => {
               </div>
             )}
 
+            {/* Action Cards */}
             {!currentChatId && (
               <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
@@ -361,6 +383,7 @@ const Dashboard = () => {
               </div>
             )}
 
+            {/* Chat Input */}
             <form
               onSubmit={handleSubmitMessage}
               className="dashboard-chatbox mt-auto"
