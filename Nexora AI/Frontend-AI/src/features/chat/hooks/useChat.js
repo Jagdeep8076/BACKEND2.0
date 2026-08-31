@@ -25,126 +25,91 @@ import {
 
 import { useDispatch } from "react-redux";
 
-
 export const useChat = () => {
 
     const dispatch = useDispatch();
-
-
-    // ==========================================
-    // SEND MESSAGE WITH STREAMING
-    // ==========================================
 
     function handleSendMessage({ message, chatId }) {
 
         dispatch(setLoading(true));
         dispatch(setError(null));
 
-        // User message immediately UI mein show karo
         if (chatId) {
-
             dispatch(addNewMessage({
                 chatId,
                 content: message,
-                role: "user",
+                role: "user"
             }));
-
         }
-
 
         const cleanup = sendMessageStream({
 
             message,
             chatId,
 
-
-            // ==================================
-            // CHAT START
-            // ==================================
-
             onStart: (data) => {
 
-                console.log(
-                    "CHAT START:",
-                    data
-                );
+                console.log("CHAT START:", data);
 
                 const newChatId = data.chatId;
 
-
-                // New chat create hua
                 if (!chatId) {
 
                     dispatch(createNewChat({
                         chatId: newChatId,
-                        title: data.title,
+                        title: data.title
                     }));
-
 
                     dispatch(addNewMessage({
                         chatId: newChatId,
                         content: message,
-                        role: "user",
+                        role: "user"
                     }));
                 }
-
 
                 dispatch(
                     setCurrentChatId(newChatId)
                 );
+
+                dispatch(
+                    startStreamingMessage({
+                        chatId: newChatId
+                    })
+                );
             },
-
-
-            // ==================================
-            // AI TOKEN
-            // ==================================
 
             onToken: (data) => {
 
-                console.log(
-                    "AI TOKEN:",
-                    data.token
+                console.log("AI TOKEN:", data.token);
+
+                dispatch(
+                    appendStreamingToken({
+                        chatId: data.chatId,
+                        token: data.token
+                    })
                 );
-
-                // TODO:
-                // Next step mein Redux ke andar
-                // streaming message update karenge.
-
             },
-
-
-            // ==================================
-            // CHAT COMPLETE
-            // ==================================
 
             onComplete: (data) => {
 
-                console.log(
-                    "CHAT COMPLETE:",
-                    data
-                );
+    console.log("CHAT COMPLETE:", data);
 
+    dispatch(
+        finishStreamingMessage({
+            chatId: data.chatId,
+            content: data.message.content,
+            sources: data.sources || []
+        })
+    );
 
-                dispatch(addNewMessage({
-                    chatId: data.chatId,
-                    content: data.message.content,
-                    role: "ai",
-                }));
+    dispatch(
+        setCurrentChatId(data.chatId)
+    );
 
+    dispatch(setLoading(false));
 
-                dispatch(
-                    setCurrentChatId(data.chatId)
-                );
-
-                dispatch(setLoading(false));
-
-                cleanup();
-            },
-
-
-            // ==================================
-            // CHAT ERROR
-            // ==================================
+    cleanup();
+},
 
             onError: (error) => {
 
@@ -167,11 +132,6 @@ export const useChat = () => {
         });
     }
 
-
-    // ==========================================
-    // GET CHATS
-    // ==========================================
-
     async function handleGetChats() {
 
         try {
@@ -191,7 +151,7 @@ export const useChat = () => {
                             id: chat._id,
                             title: chat.title,
                             messages: [],
-                            lastUpdated: chat.updatedAt,
+                            lastUpdated: chat.updatedAt
                         };
 
                         return acc;
@@ -220,11 +180,6 @@ export const useChat = () => {
         }
     }
 
-
-    // ==========================================
-    // OPEN CHAT
-    // ==========================================
-
     async function handleOpenChat(
         chatId,
         chats
@@ -237,7 +192,6 @@ export const useChat = () => {
                 chats[chatId]?.messages.length
             );
 
-
             if (
                 chats[chatId]?.messages.length === 0
             ) {
@@ -249,23 +203,19 @@ export const useChat = () => {
 
                 const { messages } = data;
 
-
                 const formattedMessages =
                     messages.map((msg) => ({
                         content: msg.content,
-                        role: msg.role,
+                        role: msg.role
                     }));
-
 
                 dispatch(
                     addMessages({
                         chatId,
-                        messages:
-                            formattedMessages,
+                        messages: formattedMessages
                     })
                 );
             }
-
 
             dispatch(
                 setCurrentChatId(chatId)
@@ -291,7 +241,6 @@ export const useChat = () => {
         }
     }
 
-
     return {
 
         initializeSocketConnection,
@@ -302,6 +251,6 @@ export const useChat = () => {
 
         handleGetChats,
 
-        handleOpenChat,
+        handleOpenChat
     };
 };

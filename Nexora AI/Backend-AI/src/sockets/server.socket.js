@@ -7,6 +7,7 @@ import messageModel from "../models/message.model .js";
 import {
     generateResponseStream,
     generateChatTitle,
+    getSourcesForMessage
 } from "../services/ai.service.js";
 
 let io;
@@ -69,7 +70,9 @@ export function initSocket(httpServer) {
             );
 
             next();
+
         } catch (error) {
+
             console.error(
                 "SOCKET JWT ERROR:",
                 error.message
@@ -84,6 +87,7 @@ export function initSocket(httpServer) {
     });
 
     io.on("connection", (socket) => {
+
         console.log(
             "A User Connected:",
             socket.id,
@@ -94,7 +98,9 @@ export function initSocket(httpServer) {
         socket.on(
             "chat:send",
             async ({ message, chatId }) => {
+
                 try {
+
                     console.log(
                         "CHAT MESSAGE:",
                         message
@@ -104,6 +110,7 @@ export function initSocket(httpServer) {
                         !message ||
                         !message.trim()
                     ) {
+
                         return socket.emit(
                             "chat:error",
                             {
@@ -116,6 +123,7 @@ export function initSocket(httpServer) {
                     let chat;
 
                     if (!chatId) {
+
                         const title =
                             await generateChatTitle(
                                 message
@@ -127,7 +135,9 @@ export function initSocket(httpServer) {
                                     socket.user.id,
                                 title,
                             });
+
                     } else {
+
                         chat =
                             await chatModel.findOne({
                                 _id: chatId,
@@ -136,6 +146,7 @@ export function initSocket(httpServer) {
                             });
 
                         if (!chat) {
+
                             return socket.emit(
                                 "chat:error",
                                 {
@@ -178,6 +189,7 @@ export function initSocket(httpServer) {
                             messages
                         )
                     ) {
+
                         if (!chunk) {
                             continue;
                         }
@@ -195,6 +207,7 @@ export function initSocket(httpServer) {
                     }
 
                     if (!fullResponse.trim()) {
+
                         throw new Error(
                             "AI returned an empty response"
                         );
@@ -207,12 +220,20 @@ export function initSocket(httpServer) {
                             role: "ai",
                         });
 
+                    const sources =
+                        await getSourcesForMessage(
+                            message
+                        );
+
                     socket.emit(
                         "chat:complete",
                         {
                             chatId:
                                 chat._id.toString(),
+
                             message: aiMessage,
+
+                            sources
                         }
                     );
 
@@ -220,7 +241,14 @@ export function initSocket(httpServer) {
                         "AI STREAM COMPLETED:",
                         chat._id.toString()
                     );
+
+                    console.log(
+                        "RAG SOURCES:",
+                        sources
+                    );
+
                 } catch (error) {
+
                     console.error(
                         "CHAT STREAM ERROR:",
                         error
@@ -241,6 +269,7 @@ export function initSocket(httpServer) {
         socket.on(
             "disconnect",
             (reason) => {
+
                 console.log(
                     "A User Disconnected:",
                     socket.id,
@@ -252,7 +281,9 @@ export function initSocket(httpServer) {
 }
 
 export function getIO() {
+
     if (!io) {
+
         throw new Error(
             "Socket.io not initialized"
         );

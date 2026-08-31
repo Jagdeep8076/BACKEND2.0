@@ -1,11 +1,23 @@
 import React, { useLayoutEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import axios from "axios";
 import gsap from "gsap";
 
+const api = axios.create({
+  baseURL: "http://localhost:3000",
+  withCredentials: true,
+});
+
 const Register = () => {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -121,16 +133,56 @@ const Register = () => {
     return () => ctx.revert();
   }, []);
 
-  const submitForm = (event) => {
+  const submitForm = async (event) => {
     event.preventDefault();
 
-    const payload = {
-      username,
-      email,
-      password,
-    };
+    setError("");
+    setSuccess("");
 
-    console.log("Register payload:", payload);
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedUsername || !trimmedEmail || !password.trim()) {
+      setError("Please fill all fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await api.post("/api/auth/register", {
+        username: trimmedUsername,
+        email: trimmedEmail,
+        password,
+      });
+
+      console.log("Register Response:", response.data);
+
+      setSuccess(
+        response.data?.message ||
+          "Registration successful! Please verify your email."
+      );
+
+      setUsername("");
+      setEmail("");
+      setPassword("");
+
+      // Backend sends email verification link.
+      // Give user a moment to see success message.
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      console.error("Register Error:", err);
+
+      const message =
+        err.response?.data?.message ||
+        "Registration failed. Please try again.";
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -151,7 +203,6 @@ const Register = () => {
 
       <div className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:px-8">
         <div className="register-shell relative grid min-h-[720px] w-full max-w-[1240px] overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#080d18]/90 shadow-[0_30px_100px_rgba(0,0,0,.55)] backdrop-blur-xl lg:grid-cols-2">
-
           {/* LEFT */}
           <section className="relative hidden overflow-hidden border-r border-white/[0.07] lg:block">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(0,196,224,.11),transparent_35%)]" />
@@ -209,8 +260,7 @@ const Register = () => {
 
             {/* Bottom copy */}
             <div className="register-copy absolute bottom-12 left-10 right-12">
-              <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
-              </p>
+              <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400"></p>
 
               <h1 className="max-w-[520px] text-5xl font-bold leading-[1.05] tracking-[-0.04em]">
                 Build your future
@@ -228,7 +278,6 @@ const Register = () => {
           {/* RIGHT */}
           <section className="relative flex min-h-[720px] items-center justify-center px-7 py-12 sm:px-12 lg:px-16">
             <div className="register-form-content w-full max-w-[500px]">
-
               <div className="mb-8">
                 <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.35em] text-cyan-400">
                   Create Account
@@ -244,7 +293,6 @@ const Register = () => {
               </div>
 
               <form onSubmit={submitForm} className="space-y-5">
-
                 {/* Username */}
                 <div>
                   <label
@@ -261,7 +309,8 @@ const Register = () => {
                     onChange={(event) => setUsername(event.target.value)}
                     placeholder="Enter your username"
                     required
-                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
+                    disabled={loading}
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
 
@@ -281,7 +330,8 @@ const Register = () => {
                     onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
+                    disabled={loading}
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
 
@@ -301,18 +351,38 @@ const Register = () => {
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="Create a strong password"
                     required
-                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)]"
+                    disabled={loading}
+                    className="h-14 w-full rounded-xl border border-white/[0.08] bg-[#050912] px-5 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-700 hover:border-cyan-400/20 focus:border-cyan-400/60 focus:bg-[#07101c] focus:shadow-[0_0_0_4px_rgba(34,211,238,.07),0_0_30px_rgba(34,211,238,.05)] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
+
+                {/* Error */}
+                {error && (
+                  <div className="rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-sm text-red-300">
+                    {error}
+                  </div>
+                )}
+
+                {/* Success */}
+                {success && (
+                  <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-3 text-sm text-emerald-300">
+                    {success}
+                  </div>
+                )}
 
                 {/* Button */}
                 <button
                   type="submit"
-                  className="group relative mt-2 h-14 w-full overflow-hidden rounded-xl bg-gradient-to-r from-cyan-400 to-blue-600 text-sm font-bold text-white shadow-[0_10px_35px_rgba(0,140,255,.18)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(0,170,255,.28)]"
+                  disabled={loading}
+                  className="group relative mt-2 h-14 w-full overflow-hidden rounded-xl bg-gradient-to-r from-cyan-400 to-blue-600 text-sm font-bold text-white shadow-[0_10px_35px_rgba(0,140,255,.18)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(0,170,255,.28)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  <span className="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-700 group-hover:translate-x-full" />
+                  {!loading && (
+                    <span className="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-700 group-hover:translate-x-full" />
+                  )}
 
-                  <span className="relative">Create Account</span>
+                  <span className="relative">
+                    {loading ? "Creating Account..." : "Create Account"}
+                  </span>
                 </button>
               </form>
 

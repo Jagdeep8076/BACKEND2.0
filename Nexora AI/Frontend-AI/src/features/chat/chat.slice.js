@@ -1,27 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-
 const chatSlice = createSlice({
 
     name: "chat",
 
     initialState: {
-
         chats: {},
-
         currentChatId: null,
-
         isLoading: false,
-
         error: null,
-
     },
 
     reducers: {
-
-        // ==========================================
-        // CREATE NEW CHAT
-        // ==========================================
 
         createNewChat: (state, action) => {
 
@@ -29,32 +19,23 @@ const chatSlice = createSlice({
                 action.payload;
 
             state.chats[chatId] = {
-
                 id: chatId,
-
                 title,
-
                 messages: [],
-
                 lastUpdated:
                     new Date().toISOString(),
             };
         },
-
-
-        // ==========================================
-        // ADD NORMAL MESSAGE
-        // ==========================================
 
         addNewMessage: (state, action) => {
 
             const {
                 chatId,
                 content,
-                role
+                role,
+                sources = []
             } = action.payload;
 
-            // Safety check
             if (!state.chats[chatId]) {
                 return;
             }
@@ -62,13 +43,9 @@ const chatSlice = createSlice({
             state.chats[chatId].messages.push({
                 content,
                 role,
+                sources
             });
         },
-
-
-        // ==========================================
-        // ADD MULTIPLE MESSAGES
-        // ==========================================
 
         addMessages: (state, action) => {
 
@@ -77,7 +54,6 @@ const chatSlice = createSlice({
                 messages
             } = action.payload;
 
-            // Safety check
             if (!state.chats[chatId]) {
                 return;
             }
@@ -87,11 +63,6 @@ const chatSlice = createSlice({
                 .push(...messages);
         },
 
-
-        // ==========================================
-        // START AI STREAM
-        // ==========================================
-
         startStreamingMessage: (
             state,
             action
@@ -100,7 +71,6 @@ const chatSlice = createSlice({
             const { chatId } =
                 action.payload;
 
-            // Safety check
             if (!state.chats[chatId]) {
                 return;
             }
@@ -110,13 +80,9 @@ const chatSlice = createSlice({
                 .push({
                     content: "",
                     role: "ai",
+                    sources: []
                 });
         },
-
-
-        // ==========================================
-        // APPEND AI TOKEN
-        // ==========================================
 
         appendStreamingToken: (
             state,
@@ -128,7 +94,6 @@ const chatSlice = createSlice({
                 token
             } = action.payload;
 
-            // Safety check
             if (!state.chats[chatId]) {
                 return;
             }
@@ -139,7 +104,6 @@ const chatSlice = createSlice({
             const lastMessage =
                 messages[messages.length - 1];
 
-            // Make sure last message is AI
             if (
                 lastMessage &&
                 lastMessage.role === "ai"
@@ -149,11 +113,6 @@ const chatSlice = createSlice({
             }
         },
 
-
-        // ==========================================
-        // FINISH STREAM
-        // ==========================================
-
         finishStreamingMessage: (
             state,
             action
@@ -161,7 +120,8 @@ const chatSlice = createSlice({
 
             const {
                 chatId,
-                content
+                content,
+                sources = []
             } = action.payload;
 
             if (!state.chats[chatId]) {
@@ -182,24 +142,16 @@ const chatSlice = createSlice({
                 lastMessage.content =
                     content;
 
+                lastMessage.sources =
+                    sources;
             }
         },
-
-
-        // ==========================================
-        // SET CHATS
-        // ==========================================
 
         setChats: (state, action) => {
 
             state.chats =
                 action.payload;
         },
-
-
-        // ==========================================
-        // SET CURRENT CHAT
-        // ==========================================
 
         setCurrentChatId: (
             state,
@@ -210,11 +162,6 @@ const chatSlice = createSlice({
                 action.payload;
         },
 
-
-        // ==========================================
-        // LOADING
-        // ==========================================
-
         setLoading: (
             state,
             action
@@ -223,11 +170,6 @@ const chatSlice = createSlice({
             state.isLoading =
                 action.payload;
         },
-
-
-        // ==========================================
-        // ERROR
-        // ==========================================
 
         setError: (
             state,
@@ -239,7 +181,6 @@ const chatSlice = createSlice({
         },
     },
 });
-
 
 export const {
     setChats,
@@ -257,6 +198,5 @@ export const {
     finishStreamingMessage,
 
 } = chatSlice.actions;
-
 
 export default chatSlice.reducer;

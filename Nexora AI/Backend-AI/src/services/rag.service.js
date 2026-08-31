@@ -30,6 +30,7 @@ async function createEmbedding(text) {
 }
 
 export async function searchSimilarDocuments(query, topK = 5) {
+
     const queryVector = await createEmbedding(query);
 
     const result = await index.query({
@@ -38,5 +39,11 @@ export async function searchSimilarDocuments(query, topK = 5) {
         includeMetadata: true,
     });
 
-    return result.matches || [];
+    return (result.matches || []).map((match) => ({
+        score: match.score,
+        text: match.metadata?.text || "",
+        source: match.metadata?.source || "Unknown source",
+        page: match.metadata?.page || null,
+        chunkId: match.metadata?.chunkId || match.id,
+    }));
 }

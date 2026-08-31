@@ -42,35 +42,77 @@ const agent = createAgent({
     tools: [searchInternetTool]
 });
 
-async function getRAGContext(message) {
-    const results = await searchSimilarDocuments(message, 5);
+async function getRAGResults(message) {
+    return await searchSimilarDocuments(message, 5);
+}
 
+function createRAGContext(results) {
     if (!results.length) {
         return "";
     }
 
     return results
-        .map((result) => result.metadata?.text)
-        .filter(Boolean)
-        .join("\n\n");
+        .map((result, index) => {
+            return `
+Source ${index + 1}:
+Document: ${result.source}
+Page: ${result.page ?? "Unknown"}
+
+Content:
+${result.text}
+`;
+        })
+        .join("\n");
+}
+
+function createSources(results) {
+    const uniqueSources = new Map();
+
+    for (const result of results) {
+
+        const key = `${result.source}-${result.page}`;
+
+        if (!uniqueSources.has(key)) {
+            uniqueSources.set(key, {
+                source: result.source,
+                page: result.page
+            });
+        }
+    }
+
+    return Array.from(uniqueSources.values());
+}
+
+export async function getSourcesForMessage(message) {
+    const results = await getRAGResults(message);
+
+    return createSources(results);
 }
 
 export async function generateResponse(messages) {
+
     const lastMessage =
         messages[messages.length - 1];
 
-    const ragContext = await getRAGContext(
+    const ragResults = await getRAGResults(
         lastMessage.content
     );
 
+    const ragContext =
+        createRAGContext(ragResults);
+
     const response = await agent.invoke({
+
         messages: [
+
             new SystemMessage(`
 You are a helpful and precise assistant.
 
 Use the retrieved document context when it is relevant to the user's question.
 
-Do not invent information that is not supported by the retrieved context.
+Do not invent information that is not supported by the retrieved document context.
+
+If the retrieved context contains the answer, prioritize it over your general knowledge.
 
 If the retrieved context does not contain the answer, you may answer using your general knowledge.
 
@@ -83,12 +125,17 @@ ${ragContext || "No relevant document context found."}
 
             ...messages
                 .map((msg) => {
+
                     if (msg.role === "user") {
-                        return new HumanMessage(msg.content);
+                        return new HumanMessage(
+                            msg.content
+                        );
                     }
 
                     if (msg.role === "ai") {
-                        return new AIMessage(msg.content);
+                        return new AIMessage(
+                            msg.content
+                        );
                     }
 
                     return null;
@@ -103,22 +150,30 @@ ${ragContext || "No relevant document context found."}
 }
 
 export async function* generateResponseStream(messages) {
+
     const lastMessage =
         messages[messages.length - 1];
 
-    const ragContext = await getRAGContext(
+    const ragResults = await getRAGResults(
         lastMessage.content
     );
 
+    const ragContext =
+        createRAGContext(ragResults);
+
     const stream = await agent.stream(
+
         {
             messages: [
+
                 new SystemMessage(`
 You are a helpful and precise assistant.
 
 Use the retrieved document context when it is relevant to the user's question.
 
-Do not invent information that is not supported by the retrieved context.
+Do not invent information that is not supported by the retrieved document context.
+
+If the retrieved context contains the answer, prioritize it over your general knowledge.
 
 If the retrieved context does not contain the answer, you may answer using your general knowledge.
 
@@ -131,6 +186,7 @@ ${ragContext || "No relevant document context found."}
 
                 ...messages
                     .map((msg) => {
+
                         if (msg.role === "user") {
                             return new HumanMessage(
                                 msg.content
@@ -148,15 +204,18 @@ ${ragContext || "No relevant document context found."}
                     .filter(Boolean)
             ]
         },
+
         {
             streamMode: "messages"
         }
     );
 
     for await (const chunk of stream) {
+
         const messageChunk = chunk[0];
 
-        const text = messageChunk?.content;
+        const text =
+            messageChunk?.content;
 
         if (
             typeof text === "string" &&
@@ -168,8 +227,10 @@ ${ragContext || "No relevant document context found."}
 }
 
 export async function generateChatTitle(message) {
+
     const response =
         await mistralModel.invoke([
+
             new SystemMessage(`
 You are a helpful assistant that generates concise and descriptive titles for chat conversations.
 

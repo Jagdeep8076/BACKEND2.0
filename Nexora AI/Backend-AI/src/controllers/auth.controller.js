@@ -137,27 +137,31 @@ export async function verifyEmail(req, res) {
     const { token } = req.query;
 
     try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-
-        const user = await userModel.findOne({ email: decoded.email });
+        const user = await userModel.findOne({
+            email: decoded.email
+        });
 
         if (!user) {
             return res.status(400).json({
                 message: "Invalid token",
                 success: false,
                 err: "User not found"
-            })
+            });
         }
 
-         if (user.verified) {
-            return res.status(200).send(`
+        if (user.verified) {
+            return res.send(`
                 <h1>Email Already Verified</h1>
                 <p>Your email has already been verified.</p>
                 <p>You can now log in to your Nexora-AI account.</p>
-                <a href="http://localhost:3000/login">Go to Login</a>
+                <a href="${process.env.FRONTEND_URL}/login">
+                    Go to Login
+                </a>
             `);
         }
 
@@ -165,23 +169,24 @@ export async function verifyEmail(req, res) {
 
         await user.save();
 
-        const html =
-            `
-        <h1>Email Verified Successfully!</h1>
-        <p>Your email has been verified. You can now log in to your account.</p>
-        <a href="http://localhost:3000/login">Go to Login</a>
-    `
+        return res.send(`
+            <h1>Email Verified Successfully!</h1>
+            <p>Your email has been verified.</p>
+            <p>You can now log in to your Nexora-AI account.</p>
 
-        return res.send(html);
+            <a href="${process.env.FRONTEND_URL}/login">
+                Go to Login
+            </a>
+        `);
+
     } catch (err) {
         return res.status(400).json({
             message: "Invalid or expired token",
             success: false,
             err: err.message
-        })
+        });
     }
 }
-
 
 export async function resendVerificationEmail(req, res) {
     const { email } = req.body;

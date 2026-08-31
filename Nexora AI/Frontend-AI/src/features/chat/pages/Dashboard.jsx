@@ -6,6 +6,7 @@ import { useChat } from "../hooks/useChat";
 import { useAuth } from "../../auth/hook/useAuth.js";
 import { dashboardAnimation } from "../../../Animations/Dashboard.animation.js";
 import { setCurrentChatId } from "../chat.slice";
+import { deleteChat } from "../service/chat.api";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -23,7 +24,7 @@ const Dashboard = () => {
 
   const [chatInput, setChatInput] = useState("");
 
-useEffect(() => {
+  useEffect(() => {
     chat.initializeSocketConnection();
 
     chat.handleGetChats();
@@ -31,10 +32,10 @@ useEffect(() => {
     const cleanup = dashboardAnimation(containerRef);
 
     return () => {
-        cleanup?.();
-        chat.disconnectSocket();
+      cleanup?.();
+      chat.disconnectSocket();
     };
-}, []);
+  }, []);
 
   const handleSubmitMessage = (event) => {
     event.preventDefault();
@@ -62,6 +63,22 @@ useEffect(() => {
     chat.handleOpenChat(chatId, chats);
   };
 
+  const handleDeleteChat = async (chatId, event) => {
+    event.stopPropagation();
+
+    try {
+      await deleteChat(chatId);
+
+      if (currentChatId === chatId) {
+        dispatch(setCurrentChatId(null));
+      }
+
+      await chat.handleGetChats();
+    } catch (error) {
+      console.error("Delete Chat Error:", error);
+    }
+  };
+
   const chatList = Object.values(chats || {});
 
   const currentChat = chats?.[currentChatId];
@@ -86,7 +103,6 @@ useEffect(() => {
 
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-blue-600/10 blur-[130px]" />
 
-      {/* Sidebar */}
       <aside className="dashboard-sidebar relative z-20 flex h-full w-[270px] shrink-0 flex-col border-r border-white/[0.07] bg-[#050b14]/90 backdrop-blur-2xl">
         <div className="flex h-[76px] shrink-0 items-center gap-3 border-b border-white/[0.06] px-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
@@ -142,24 +158,39 @@ useEffect(() => {
 
           <div className="space-y-1">
             {chatList.map((chatItem) => (
-              <button
+              <div
                 key={chatItem.id}
-                type="button"
-                onClick={() => handleOpenChat(chatItem.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                className={`group flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition ${
                   currentChatId === chatItem.id
                     ? "bg-white/[0.07] text-white"
                     : "text-gray-500 hover:bg-white/[0.04] hover:text-gray-200"
                 }`}
               >
-                <span className="text-xs text-gray-700">
-                  ◇
-                </span>
+                <button
+                  type="button"
+                  onClick={() => handleOpenChat(chatItem.id)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                >
+                  <span className="text-xs text-gray-700">
+                    ◇
+                  </span>
 
-                <span className="truncate">
-                  {chatItem.title}
-                </span>
-              </button>
+                  <span className="truncate">
+                    {chatItem.title}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    handleDeleteChat(chatItem.id, event)
+                  }
+                  className="shrink-0 rounded-md px-2 py-1 text-xs text-gray-600 opacity-0 transition hover:bg-red-400/10 hover:text-red-400 group-hover:opacity-100"
+                  title="Delete chat"
+                >
+                  ×
+                </button>
+              </div>
             ))}
 
             {!chatList.length && (
@@ -170,7 +201,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* User Section */}
         <div className="border-t border-white/[0.06] p-3">
           <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-sm font-bold">
@@ -188,7 +218,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Logout */}
           <button
             type="button"
             onClick={handleLogout}
@@ -199,7 +228,6 @@ useEffect(() => {
         </div>
       </aside>
 
-      {/* Main Section */}
       <section className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="dashboard-topbar flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#030712]/60 px-5 backdrop-blur-xl md:px-8">
           <div className="text-sm text-gray-500">
@@ -217,8 +245,6 @@ useEffect(() => {
 
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 py-10 md:px-10 lg:py-14">
-
-            {/* Greeting */}
             <div className="dashboard-greeting mb-10">
               <p className="mb-3 text-[11px] uppercase tracking-[0.3em] text-cyan-400">
                 Intelligent Workspace
@@ -238,10 +264,8 @@ useEffect(() => {
               </p>
             </div>
 
-            {/* AI Core */}
             {!currentChatId && (
               <div className="dashboard-core relative mb-10 flex min-h-[250px] items-center justify-center overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.018]">
-
                 <div className="dashboard-core-glow absolute h-48 w-48 rounded-full bg-cyan-400/10 blur-[80px]" />
 
                 <div className="dashboard-core-light absolute inset-0 rounded-full bg-cyan-400/[0.03] blur-3xl" />
@@ -271,7 +295,6 @@ useEffect(() => {
                 <span className="dashboard-particle absolute bottom-[32%] left-[43%] h-1 w-1 rounded-full bg-cyan-200" />
 
                 <div className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full border border-cyan-400/20 bg-[#07111f] shadow-[0_0_60px_rgba(34,211,238,0.15)]">
-
                   <div className="dashboard-core-light absolute inset-0 rounded-full bg-cyan-400/10 blur-xl" />
 
                   <div className="absolute inset-0 rounded-full bg-cyan-400/10 blur-xl" />
@@ -294,7 +317,6 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Messages */}
             {currentChatId && (
               <div className="messages mb-8 flex-1 space-y-4 overflow-y-auto pr-2">
                 {messages.map((message, index) => (
@@ -311,49 +333,90 @@ useEffect(() => {
                         {message.content}
                       </p>
                     ) : (
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({ children }) => (
-                            <p className="mb-2 last:mb-0">
-                              {children}
-                            </p>
-                          ),
+                      <>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => (
+                              <p className="mb-2 last:mb-0">
+                                {children}
+                              </p>
+                            ),
 
-                          ul: ({ children }) => (
-                            <ul className="mb-2 list-disc pl-5">
-                              {children}
-                            </ul>
-                          ),
+                            ul: ({ children }) => (
+                              <ul className="mb-2 list-disc pl-5">
+                                {children}
+                              </ul>
+                            ),
 
-                          ol: ({ children }) => (
-                            <ol className="mb-2 list-decimal pl-5">
-                              {children}
-                            </ol>
-                          ),
+                            ol: ({ children }) => (
+                              <ol className="mb-2 list-decimal pl-5">
+                                {children}
+                              </ol>
+                            ),
 
-                          code: ({ children }) => (
-                            <code className="rounded bg-white/10 px-1 py-0.5">
-                              {children}
-                            </code>
-                          ),
+                            code: ({ children }) => (
+                              <code className="rounded bg-white/10 px-1 py-0.5">
+                                {children}
+                              </code>
+                            ),
 
-                          pre: ({ children }) => (
-                            <pre className="mb-2 overflow-x-auto rounded-xl bg-black/30 p-3">
-                              {children}
-                            </pre>
-                          ),
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                            pre: ({ children }) => (
+                              <pre className="mb-2 overflow-x-auto rounded-xl bg-black/30 p-3">
+                                {children}
+                              </pre>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+
+                        {message.sources?.length > 0 && (
+                          <div className="mt-4 border-t border-white/[0.06] pt-3">
+                            <div className="mb-2 flex items-center gap-2">
+                              <span className="text-xs text-cyan-400">
+                                ◈
+                              </span>
+
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400">
+                                Sources
+                              </p>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              {message.sources.map(
+                                (source, sourceIndex) => (
+                                  <div
+                                    key={`${source.source}-${source.page}-${sourceIndex}`}
+                                    className="flex items-center gap-2 rounded-lg border border-white/[0.05] bg-white/[0.025] px-3 py-2 text-xs"
+                                  >
+                                    <span className="text-cyan-400">
+                                      ◇
+                                    </span>
+
+                                    <span className="min-w-0 flex-1 truncate text-gray-400">
+                                      {source.source ||
+                                        "Unknown document"}
+                                    </span>
+
+                                    {source.page && (
+                                      <span className="shrink-0 text-gray-600">
+                                        Page {source.page}
+                                      </span>
+                                    )}
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Action Cards */}
             {!currentChatId && (
               <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
@@ -383,7 +446,6 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Chat Input */}
             <form
               onSubmit={handleSubmitMessage}
               className="dashboard-chatbox mt-auto"
