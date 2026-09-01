@@ -8,9 +8,12 @@ export const initializeSocketConnection = () => {
         return socket;
     }
 
-    socket = io("http://localhost:3000", {
-        withCredentials: true,
-    });
+    socket = io(
+        import.meta.env.VITE_API_URL,
+        {
+            withCredentials: true,
+        }
+    );
 
     socket.on("connect", () => {
         console.log(
@@ -50,33 +53,58 @@ export const sendMessageStream = ({
     onError,
 }) => {
 
-    const socket = initializeSocketConnection();
+    const socket =
+        initializeSocketConnection();
 
-    // Chat started
-    socket.on("chat:start", onStart);
+    socket.on(
+        "chat:start",
+        onStart
+    );
 
-    // AI token received
-    socket.on("chat:token", onToken);
+    socket.on(
+        "chat:token",
+        onToken
+    );
 
-    // AI response completed
-    socket.on("chat:complete", onComplete);
+    socket.on(
+        "chat:complete",
+        onComplete
+    );
 
-    // Error
-    socket.on("chat:error", onError);
+    socket.on(
+        "chat:error",
+        onError
+    );
 
-    // Send message to backend
-    socket.emit("chat:send", {
-        message,
-        chatId,
-    });
+    socket.emit(
+        "chat:send",
+        {
+            message,
+            chatId,
+        }
+    );
 
-    // Cleanup listeners
     return () => {
 
-        socket.off("chat:start", onStart);
-        socket.off("chat:token", onToken);
-        socket.off("chat:complete", onComplete);
-        socket.off("chat:error", onError);
+        socket.off(
+            "chat:start",
+            onStart
+        );
+
+        socket.off(
+            "chat:token",
+            onToken
+        );
+
+        socket.off(
+            "chat:complete",
+            onComplete
+        );
+
+        socket.off(
+            "chat:error",
+            onError
+        );
     };
 };
 
@@ -92,5 +120,6 @@ export const disconnectSocket = () => {
     }
 
     socket.disconnect();
+
     socket = null;
 };
