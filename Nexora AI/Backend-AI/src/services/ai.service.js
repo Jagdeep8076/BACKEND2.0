@@ -20,7 +20,7 @@ import { searchSimilarDocuments } from "./rag.service.js";
 // =====================================================
 
 const geminiModel = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     apiKey: process.env.GEMINI_API_KEY
 });
 
