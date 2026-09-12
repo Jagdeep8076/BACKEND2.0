@@ -1,11 +1,16 @@
 import express from "express"
 import cors from "cors"
+import path from "path"
+import { fileURLToPath } from "url"
 import useGraph from "./services/graph.ai.service.js"
 
 const app = express()
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: true,
     methods: ["GET", "POST"],
     credentials: true
 }))
@@ -45,6 +50,14 @@ app.post("/use-graph", async (req, res) => {
             message: "AI Battle failed"
         })
     }
+})
+
+app.use(express.static(path.join(__dirname, "../public")))
+
+app.use((req, res) => {
+    res.sendFile(
+        path.join(__dirname, "../public/index.html")
+    )
 })
 
 export default app
